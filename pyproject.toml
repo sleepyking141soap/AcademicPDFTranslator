@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "academic-pdf-translator"
-version = "0.2.0a1"
+version = "0.2.0a2"
 description = "Native academic PDF translation with protected scientific content and deterministic checks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -19,6 +19,7 @@ dev = ["pytest>=8,<10", "ruff>=0.9,<1", "reportlab>=4,<5"]
 
 [project.scripts]
 academic-pdf-translator = "academic_pdf_translator.cli:main"
+academic-pdf-benchmark = "academic_pdf_translator.evaluation.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,10 +1,10 @@
-# v0.2 alpha validation record
+# v0.2 alpha 2 validation record
 
-Date: 2026-09-22. Environment: Windows, isolated CPython 3.12.13 virtual environment.
+Date: 2026-09-24. Environment: Windows, isolated CPython 3.12.13 virtual environment.
 
 ## Automated checks
 
-- `python -m pytest -q`: **119 passed**. No external model credentials required.
+- `python -m pytest -q`: **124 passed**. No external model credentials required.
 - `python -m ruff check .`: passed.
 - `python -m ruff format --check .`: passed.
 - `python -m pip check`: no broken requirements.
@@ -37,6 +37,10 @@ as documented in README. No system permissions were changed.
   hits on repeat runs, failed/risky/all retry modes and resume configuration rejection.
 - A completed PIR block with corrupted raw placeholder output is not reused, even under
   the cheaper failed-only resume policy; it is sent back to the provider.
+- Benchmark workspace initialization, PDF/PIR identity checks, safe relative paths,
+  annotation validation, stale translation-label rejection and metric calculation.
+- Both the translation UI and the local human-annotation UI start through Streamlit's
+  application test harness.
 
 The loopback service returns deterministic fixture text. It tests the HTTP/application
 contract, **not translation or explanation quality**.
@@ -74,12 +78,20 @@ Started the real application with `python app.py`; local health endpoint returne
 Desktop/mobile HTML and the paragraph detail view were also visually inspected.
 Screenshots and the local browser harness remain in ignored `tmp/`, not the package.
 
+## Benchmark workflow smoke test
+
+Ran the repository entry point through `init → add → validate → evaluate` using the synthetic
+sample PDF. It copied the source into an isolated workspace, generated PIR and annotation JSON,
+validated their identity, and produced a report whose unreviewed metrics were `null` rather than
+implicit successes. The v0.2.0a2 wheel includes all evaluation modules and both console entry
+points.
+
 ## Not verified
 
 - No real API key/model was configured. No external LLM translation, explanation
   quality, provider-specific behavior or live billing was tested.
 - No broad real-paper corpus benchmark was run.
-- GitHub Actions is configured for Windows/Linux and Python 3.11–3.14; those remote
-  jobs have not been run. Local results above apply to Windows/Python 3.12.13.
+- GitHub Actions is configured for Windows/Linux and Python 3.11–3.14. Local results above apply
+  to Windows/Python 3.12.13; use the repository's latest Actions run for the current remote status.
 - OCR, Vision, MinerU/Docling implementations, semantic verification, PDF layout
   rewriting and mobile clients are intentionally outside this alpha.

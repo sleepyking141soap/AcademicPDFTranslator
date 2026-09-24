@@ -12,3 +12,5 @@ tmp/
 .apt-cache/
 .coverage
 htmlcov/
+benchmark/workspace/
+benchmark/workspaces/

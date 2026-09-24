@@ -1,6 +1,6 @@
 # AcademicPDFTranslator
 
-面向科研论文的原生 PDF 翻译与理解实验项目。当前版本为 **v0.2.0 alpha 1**；v0.1 的可检查核心链路之上，已经加入本地缓存和断点续译：
+面向科研论文的原生 PDF 翻译与理解实验项目。当前版本为 **v0.2.0 alpha 2**；v0.1 的可检查核心链路之上，已经加入本地缓存、断点续译和真实论文评测工作区：
 
 ```text
 PDF → Native PDF Parsing → PIR → AcademicGuard → 上下文翻译
@@ -18,6 +18,7 @@ PDF → Native PDF Parsing → PIR → AcademicGuard → 上下文翻译
 | TransCheck | 比较数字、单位、引用、图表编号、受保护项的**多重集**；额外检查数值与单位组合 | 规则通过不等于语义正确；risk_score 是启发式分数，不是错误概率 |
 | PaperExplain | 按需结合摘要、节标题、前后段，生成通俗解释、论文作用和术语解释 | LLM 解释需复核；不会自动解释全文 |
 | Incremental Translation | 只缓存规则校验通过的模型原始输出；支持从 PIR 续传以及按失败/风险选择重试 | 缓存为本地文件，不含跨设备同步、并发锁或容量回收 |
+| Human Evaluation | 本地保存论文、PIR 和版本化人工标签；检查阅读顺序、块类型、保护项及翻译错误 | 尚未附带真实论文语料；指标质量取决于标注规模与一致性 |
 
 项目没有复刻其他工具的代码，也没有实现 PDF 原版式回写。输出以可审查的 PIR 和双语阅读 HTML 为主。
 
@@ -212,6 +213,27 @@ python -m pytest -q
 
 GitHub Actions 配置了 Windows/Linux、Python 3.11–3.14 的测试矩阵；本地验证记录见 [validation.md](docs/validation.md)，不把尚未运行的 CI 当作已验证结果。
 
+## 真实论文评测与人工标注
+
+默认评测工作区位于 `benchmark/workspace/`，其中的 PDF、PIR、模型输出、标注和报告均被 Git 忽略：
+
+```powershell
+python benchmark.py init benchmark/workspace --name "Calibration set"
+python benchmark.py add benchmark/workspace path/to/paper.pdf --domain "machine learning"
+
+# 如果已经有真实翻译结果，可在添加时使用现有 PIR
+python benchmark.py add benchmark/workspace path/to/translated-paper.pdf `
+  --pir output/document.json --domain "signal processing"
+
+python benchmark.py serve benchmark/workspace
+python benchmark.py validate benchmark/workspace
+python benchmark.py evaluate benchmark/workspace
+```
+
+标注页面默认只监听 `127.0.0.1:8502`，支持核对页面阅读顺序、块类型、AcademicGuard
+保护范围和真实译文质量。标注带有源 PIR 指纹，翻译评审带有译文哈希；解析分块或译文变化后不会静默复用旧标签。
+详细口径与首批校准集建议见 [真实论文评测指南](docs/benchmarking.md)。
+
 ## 已知限制
 
 1. 版面分析采用启发式。复杂浮动图表、三栏、旋转文字、跨页段落、嵌套小标题和异常字体编码可能误排序或误分类；置信度也未经统计校准。
@@ -221,13 +243,13 @@ GitHub Actions 配置了 Windows/Linux、Python 3.11–3.14 的测试矩阵；�
 5. 已有文件缓存与断点续译，但没有并发锁、容量回收、跨设备同步、自动纠错重翻译或 tokenizer 精确预算。API 兼容性与生成质量需要用你自己的服务和论文验证。
 6. PaperExplain 可能误判段落作用或补充不可靠解释；解释本身没有经过语义验证。HTML 是阅读输出，不是双语 PDF。
 
-## v0.2 优先建议
+## 后续优先建议
 
-1. **真实论文评测集**：覆盖不同出版格式，标注阅读顺序、公式和翻译错误，建立可量化回归指标。
-2. **成本控制继续完善**：tokenizer 精确预算、缓存容量策略、并发锁和可审查的自动重译策略。
-3. **版面增强**：跨页段落拼接、可审查断词处理、表格/公式识别及坐标联动阅读。
-4. **小范围后端补充**：通过现有协议接入 Docling/MinerU 或按页 OCR，仅处理原生解析不足的页面。
-5. **语义与术语校验**：保护否定、比较关系和实验对象关联；以真实评测集决定是否引入独立 verifier。
+1. **完成首批校准标注**：先标 5 篇论文、约 15 页和 30 个真实译文段落，再冻结标注规范。
+2. **版面增强**：根据评测结果实现跨页段落拼接、可审查断词、表格/公式识别和坐标联动阅读。
+3. **语义与术语校验**：保护否定、比较关系和实验对象关联；以真实标签决定是否引入独立 verifier。
+4. **成本控制继续完善**：tokenizer 精确预算、缓存容量策略、并发锁和可审查的自动重译策略。
+5. **小范围后端补充**：仅在原生解析不足的数据占比值得投入时接入 Docling、MinerU 或按页 OCR。
 
 ## 开源与许可证
 
