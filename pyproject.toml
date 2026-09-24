@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "academic-pdf-translator"
+version = "0.2.0a1"
+description = "Native academic PDF translation with protected scientific content and deterministic checks"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+dependencies = [
+  "PyMuPDF>=1.24,<2", "pydantic>=2.7,<3", "httpx>=0.27,<1",
+  "python-dotenv>=1,<2", "streamlit>=1.40,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1", "reportlab>=4,<5"]
+
+[project.scripts]
+academic-pdf-translator = "academic_pdf_translator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]

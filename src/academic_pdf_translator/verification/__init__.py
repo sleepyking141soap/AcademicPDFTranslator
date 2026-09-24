@@ -1,0 +1,1 @@
+"""Deterministic academic consistency verification."""
